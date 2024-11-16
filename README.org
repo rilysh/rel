@@ -1,0 +1,9 @@
+** rel
+rily's extra libraries.
+
+**Note**: These libraries aren't meant to be compatible with standard
+C++ libraries. 
+
+** Thanks
+To libstdc++ (GCC): See [[https://github.com/gcc-mirror/gcc/blob/master/libstdc%2B%2B-v3/include/bits/sat_arith.h][sat_arith.h]]
+Population Count: https://en.cppreference.com/w/cpp/numeric/popcount
