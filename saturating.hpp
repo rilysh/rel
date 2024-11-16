@@ -13,8 +13,13 @@
 // Both __likely() and __predict_* are pre-defined
 // in various Unix-like systems. So I always have
 // to prepend key to make it unique.
-#undef __saturating_predict_false
-#define __saturating_predict_false(x)   __builtin_expect(!!(x), 0)
+#if defined (__GNUC__) || defined (__clang__)
+# undef __saturating_predict_false
+# define __saturating_predict_false(x)    __builtin_expect(!!(x), 0)
+#else
+# undef __saturating_predict_false
+# define __saturating_predict_false(x)    (x)
+#endif
 
 // swapinfo for linux
 namespace sat_arith {

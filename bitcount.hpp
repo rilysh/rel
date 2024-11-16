@@ -16,14 +16,10 @@
 // If it's GCC or Clang, we'll assume that they've
 // implemented __builtin_expect() or it's fallback stub.
 #if defined (__GNUC__) || defined (__clang__) 
-# undef __bitcount_predict_true
 # undef __bitcount_predict_false
-# define __bitcount_predict_true(x)      __builtin_expect(!!(x), 1)
 # define __bitcount_predict_false(x)     __builtin_expect(!!(x), 0)
 #else
-# undef __bitcount_predict_true
 # undef __bitcount_predict_false
-# define __bitcount_predict_true(x)      (x)
 # define __bitcount_predict_false(x)     (x)
 #endif
 
