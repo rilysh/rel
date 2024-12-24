@@ -1,3 +1,9 @@
 # Others
 others/
 *.out
+.clangd
+comment*
+*.cpp
+*.orig
+cbshort
+*.1
