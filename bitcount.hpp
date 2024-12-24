@@ -3,7 +3,6 @@
 
 /* Add popcount template function. */
 
-#include <iostream>
 #if __cplusplus < 201703L
 # error bitcount.hpp requires C++17 or above.
 #else
