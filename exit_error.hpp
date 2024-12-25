@@ -189,7 +189,7 @@ template <typename FormatPtr>
 requires (!std::is_reference_v<FormatPtr> &&
 	  std::is_same_v<std::remove_const_t<FormatPtr>, char>)
 #endif
-void make_warn(FormatPtr fmt, ...) {
+void make_warn(FormatPtr *fmt, ...) {
     va_list vl;
 
     va_start(vl, fmt);
