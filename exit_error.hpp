@@ -38,15 +38,17 @@ template <typename ExitCode,
           typename FormatPtr,
           typename = std::enable_if_t<
 	      !std::is_reference_v<FormatPtr> &&
-              std::is_same_v<std::remove_const_t<FormatPtr>, char>>>
+              std::is_same_v<std::remove_cv_t<
+				 std::remove_pointer_t<FormatPtr>>, char>>>
 #else
 template <typename ExitCode, typename FormatPtr>
 requires (std::is_same_v<ExitCode, std::int32_t> &&
 	  !std::is_reference_v<FormatPtr> &&
-	  std::is_same_v<std::remove_const_t<FormatPtr>, char>)
+	  std::is_same_v<std::remove_cv_t<
+	  std::remove_pointer_t<FormatPtr>>, char>)
 #endif
 [[noreturn]]
-void error(ExitCode exit_code, FormatPtr *fmt, ...) {
+void error(ExitCode exit_code, FormatPtr fmt, ...) {
     va_list vl;
     
     va_start(vl, fmt);
@@ -66,7 +68,8 @@ void error(ExitCode exit_code, FormatPtr *fmt, ...) {
 #if __cplusplus == 201703L
 template <typename ErrorCode,
 	  typename = std::enable_if_t<
-	      std::is_same_v<std::remove_cv_t<ErrorCode>, std::int32_t>>,
+	      std::is_error_code_enum_v<ErrorCode> ||
+	      std::is_same_v<ErrorCode, std::int32_t>>,
 	  typename ExitCode,
 	  typename = std::enable_if_t<std::is_same_v<ExitCode, std::int32_t>>,
 	  typename FormatPtr,
@@ -75,14 +78,16 @@ template <typename ErrorCode,
 	      std::is_same_v<std::remove_const_t<FormatPtr>, char>>>
 #else
 template <typename ErrorCode, typename ExitCode, typename FormatPtr>
-requires (std::is_same_v<std::remove_cv_t<ErrorCode>, std::int32_t> &&
+requires ((std::is_error_code_enum_v<ErrorCode> ||
+	   std::is_same_v<ErrorCode, std::int32_t>) &&
 	  std::is_same_v<ExitCode, std::int32_t> &&
 	  !std::is_reference_v<FormatPtr> &&
-	  std::is_same_v<std::remove_const_t<FormatPtr>, char>)
+	  std::is_same_v<std::remove_cv_t<
+	  std::remove_pointer_t<FormatPtr>>, char>)
 #endif
 [[noreturn]]
 void with_error_code(ErrorCode error_code, ExitCode exit_code,
-		     FormatPtr *fmt, ...) {
+		     FormatPtr fmt, ...) {
     va_list vl;
 
     va_start(vl, fmt);
@@ -103,15 +108,18 @@ template <typename ExitCode,
           typename FormatPtr,
           typename = std::enable_if_t<
 	      !std::is_reference_v<FormatPtr> &&
-              std::is_same_v<std::remove_const_t<FormatPtr>, char>>>
+              std::is_same_v<
+		  std::remove_cv_t<
+		      std::remove_pointer_t<FormatPtr>>, char>>>
 #else
 template <typename ExitCode, typename FormatPtr>
 requires (std::is_same_v<ExitCode, std::int32_t> &&
 	  !std::is_reference_v<FormatPtr> &&
-	  std::is_same_v<std::remove_const_t<FormatPtr>, char>)
+	  std::is_same_v<std::remove_cv_t<
+	  std::remove_pointer_t<FormatPtr>>, char>)
 #endif
 [[noreturn]]
-void make_error(ExitCode exit_code, FormatPtr *fmt, ...) {
+void make_error(ExitCode exit_code, FormatPtr fmt, ...) {
     va_list vl;
 
     va_start(vl, fmt);
@@ -129,13 +137,16 @@ void make_error(ExitCode exit_code, FormatPtr *fmt, ...) {
 template <typename FormatPtr,
           typename = std::enable_if_t<
 	      !std::is_reference_v<FormatPtr> &&
-              std::is_same_v<std::remove_const_t<FormatPtr>, char>>>
+              std::is_same_v<
+		  std::remove_cv_t<
+		      std::remove_pointer_t<FormatPtr>>, char>>>
 #else
 template <typename ExitCode, typename FormatPtr>
 requires (!std::is_reference_v<FormatPtr> &&
-	  std::is_same_v<std::remove_const_t<FormatPtr>, char>)
+	  std::is_same_v<std::remove_cv_t<
+	  std::remove_pointer_t<FormatPtr>>, char>)
 #endif
-void warn(FormatPtr *fmt, ...) {
+void warn(FormatPtr fmt, ...) {
     va_list vl;
 
     va_start(vl, fmt);
@@ -153,25 +164,30 @@ void warn(FormatPtr *fmt, ...) {
  *         errno or error code as you desire. */
 #if __cplusplus == 201703L
 template <typename ErrorCode,
-	  typename = std::enable_if_t<std::is_same_v<ErrorCode, std::int32_t>>,
+	  typename = std::enable_if_t<
+	      std::is_error_code_enum_v<ErrorCode> ||
+	      std::is_same_v<ErrorCode, std::int32_t>>,
 	  typename FormatPtr,
 	  typename = std::enable_if_t<
 	      !std::is_reference_v<FormatPtr> &&
-	      std::is_same_v<std::remove_const_t<FormatPtr>, char>>>
+	      std::is_same_v<std::remove_const_t<
+				 std::remove_pointer_t<FormatPtr>>, char>>>
 #else
 template <typename ErrorCode, typename FormatPtr>
-requires (std::is_same_v<std::remove_cv_t<ErrorCode>, std::int32_t> &&
+requires ((std::is_error_code_enum_v<ErrorCode> ||
+	   std::is_same_v<ErrorCode, std::int32_t>) &&
 	  !std::is_reference_v<FormatPtr> &&
-	  std::is_same_v<std::remove_const_t<FormatPtr>, char>)
+	  std::is_same_v<std::remove_const_t<
+	  std::remove_pointer_t<FormatPtr>>, char>)
 #endif
-void with_warn_code(ErrorCode error_code, FormatPtr *fmt, ...) {
+void with_warn_code(ErrorCode error_code, FormatPtr fmt, ...) {
     va_list vl;
 
     va_start(vl, fmt);
     std::fprintf(stderr, "%s: ", program_name);
     vfprintf(stderr, fmt, vl);
     const auto errno_message =
-	std::error_code(errno, std::generic_category()).message();
+	std::error_code(error_code, std::generic_category()).message();
     std::fprintf(stderr, ": %s\n", errno_message.c_str());
     va_end(vl);
 }
@@ -181,15 +197,17 @@ void with_warn_code(ErrorCode error_code, FormatPtr *fmt, ...) {
  *         It doesn't terminate the thread. */
 #if __cplusplus == 201703L
 template <typename FormatPtr,
-          typename = std::enable_if_t<
+	  typename = std::enable_if_t<
 	      !std::is_reference_v<FormatPtr> &&
-	      std::is_same_v<std::remove_const_t<FormatPtr>, char>>>
+	      std::is_same_v<
+		  std::remove_cv_t<std::remove_pointer_t<FormatPtr>>, char>>>
 #else
 template <typename FormatPtr>
 requires (!std::is_reference_v<FormatPtr> &&
-	  std::is_same_v<std::remove_const_t<FormatPtr>, char>)
+	  std::is_same_v<
+	  std::remove_cv_t<std::remove_pointer_t<FormatPtr>>, char>)
 #endif
-void make_warn(FormatPtr *fmt, ...) {
+void make_warn(FormatPtr fmt, ...) {
     va_list vl;
 
     va_start(vl, fmt);
